@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#101714">
+<title>FOUR DAYS — THE RIDE</title>
+<style>
+:root{--cream:#e9e4d8;--muted:#a9b0a7;--line:rgba(255,255,255,.18);--panel:rgba(9,15,13,.72);--gold:#d9b978}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101714;color:var(--cream);font-family:Inter,Arial,sans-serif}
+canvas{display:block;position:fixed;inset:0}
+#vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.42) 100%);z-index:2}
+#top{position:fixed;z-index:5;top:0;left:0;right:0;padding:18px 22px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;text-shadow:0 2px 12px #000}
+.brand{font-size:12px;letter-spacing:.28em;font-weight:800}.brand span{display:block;color:var(--gold);font-size:9px;letter-spacing:.34em;margin-top:5px}
+#daylabel{text-align:right;font-size:11px;letter-spacing:.2em;color:var(--gold)}#daylabel strong{display:block;color:#fff;font-size:17px;letter-spacing:.08em;margin-top:5px}
+#hud{position:fixed;z-index:5;left:22px;bottom:22px;display:flex;gap:10px;align-items:end;pointer-events:none}
+.stat{background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(12px);padding:10px 13px;min-width:76px}
+.stat small{display:block;font-size:8px;letter-spacing:.2em;color:var(--muted);margin-bottom:5px}.stat b{font-size:19px;font-weight:600}.stat em{font-size:10px;color:var(--muted);font-style:normal}
+#mission{position:fixed;z-index:5;top:82px;left:22px;max-width:250px;padding:12px 15px;background:var(--panel);border-left:2px solid var(--gold);backdrop-filter:blur(12px);pointer-events:none}
+#mission small{color:var(--gold);letter-spacing:.2em;font-size:8px}#mission div{font-size:12px;line-height:1.5;margin-top:5px}
+#menu{position:fixed;z-index:10;inset:0;display:grid;place-items:center;background:linear-gradient(110deg,rgba(5,10,9,.88),rgba(5,10,9,.28)),linear-gradient(0deg,rgba(0,0,0,.3),transparent);padding:20px}
+.card{width:min(560px,100%);padding:clamp(22px,5vw,44px);background:rgba(9,15,13,.78);border:1px solid var(--line);backdrop-filter:blur(18px);box-shadow:0 25px 90px #0008}
+.kicker{font-size:9px;letter-spacing:.34em;color:var(--gold);font-weight:700}
+h1{font-size:clamp(43px,10vw,76px);line-height:.9;letter-spacing:-.065em;margin:17px 0 12px;font-weight:850}
+.sub{font-size:12px;line-height:1.7;color:#b9c0b8;max-width:390px}
+.days{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:24px 0 17px}
+.day{border:1px solid var(--line);background:rgba(255,255,255,.035);color:var(--cream);padding:11px 7px;text-align:left;cursor:pointer;min-height:66px}
+.day.active{border-color:var(--gold);background:rgba(217,185,120,.12)}
+.day small{display:block;color:var(--gold);font-size:8px;letter-spacing:.15em}.day b{display:block;font-size:11px;margin-top:7px}
+button{font:inherit}
+#start{width:100%;border:0;background:var(--gold);color:#151712;padding:15px;font-weight:850;letter-spacing:.18em;font-size:10px;cursor:pointer}
+.note{font-size:9px;color:#929b91;line-height:1.6;margin-top:13px}
+#pause{position:fixed;z-index:6;right:20px;top:74px;background:var(--panel);border:1px solid var(--line);color:white;padding:9px 12px;font-size:9px;letter-spacing:.15em;display:none}
+#controls{position:fixed;z-index:6;right:18px;bottom:18px;display:none;gap:9px;align-items:end}
+.pad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,45px);gap:5px}
+.ctrl{border:1px solid #ffffff42;background:#0b120fc9;color:#fff;backdrop-filter:blur(8px);border-radius:5px;font-size:17px;touch-action:none;user-select:none}
+.ctrl:active,.ctrl.down{background:#d9b978;color:#111}
+#gas{height:95px;width:56px;font-size:9px;letter-spacing:.12em;font-weight:800}
+#toast{position:fixed;z-index:7;left:50%;top:22%;transform:translate(-50%,-10px);opacity:0;transition:.35s;background:#101713d9;border:1px solid var(--gold);padding:12px 18px;text-align:center;font-size:10px;letter-spacing:.16em;pointer-events:none}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#progress{position:fixed;z-index:5;left:50%;bottom:22px;transform:translateX(-50%);width:min(220px,32vw);height:2px;background:#ffffff30;display:none}
+#bar{height:100%;width:0;background:var(--gold)}
+#help{position:fixed;z-index:5;right:22px;bottom:22px;color:#ffffff9c;font-size:9px;letter-spacing:.1em;text-align:right;pointer-events:none}
+@media(max-width:650px){#top{padding:14px}.brand{font-size:10px}#mission{top:70px;left:14px;max-width:205px;padding:9px 11px}#hud{left:14px;bottom:135px;gap:6px}.stat{min-width:61px;padding:8px}.stat b{font-size:16px}#controls{display:flex}#help{display:none}.days{gap:4px}.day{padding:9px 5px}.day b{font-size:9px}#pause{right:14px;top:62px}}
+</style>
+</head>
+<body>
+<div id="vignette"></div>
+<div id="top"><div class="brand">FOUR DAYS<span>AN OPEN-ROAD STORY</span></div><div id="daylabel">CHAPTER 01<strong>THE DEPARTURE</strong></div></div>
+<div id="mission"><small>YOUR OBJECTIVE</small><div id="missiontext">Follow the road and reach the first overlook.</div></div>
+<div id="hud"><div class="stat"><small>SPEED</small><b id="speed">000</b> <em>km/h</em></div><div class="stat"><small>DISTANCE</small><b id="distance">0.0</b> <em>km</em></div><div class="stat"><small>VIEWS</small><b id="views">00</b></div></div>
+<div id="help">WASD / ARROWS TO RIDE<br>SPACE TO BRAKE · P TO PAUSE</div>
+<div id="progress"><div id="bar"></div></div>
+<button id="pause">Ⅱ &nbsp; PAUSE</button>
+<div id="controls">
+ <div class="pad">
+  <button class="ctrl" data-key="ArrowLeft" style="grid-column:1;grid-row:1">↶</button>
+  <button class="ctrl" data-key="ArrowUp" style="grid-column:2;grid-row:1">↑</button>
+  <button class="ctrl" data-key="ArrowRight" style="grid-column:3;grid-row:1">↷</button>
+  <button class="ctrl" data-key="ArrowDown" style="grid-column:2;grid-row:2">↓</button>
+ </div>
+ <button class="ctrl" id="gas" data-key=" ">RIDE<br>HOLD</button>
+</div>
+<div id="toast"></div>
+<div id="menu"><div class="card">
+ <div class="kicker">A FOUR-CHAPTER MOTORCYCLE JOURNEY</div>
+ <h1>FOUR<br>DAYS<span style="color:var(--gold)">.</span></h1>
+ <div class="sub">One road. Four days. A thousand small moments. Ride through a cinematic adventure inspired by Jay Jankulovski's four-day motorcycle film.</div>
+ <div class="days" id="days">
+  <button class="day active" data-day="0"><small>DAY 01</small><b>DEPARTURE</b></button>
+  <button class="day" data-day="1"><small>DAY 02</small><b>THE WILDS</b></button>
+  <button class="day" data-day="2"><small>DAY 03</small><b>OPEN ROAD</b></button>
+  <button class="day" data-day="3"><small>DAY 04</small><b>THE RETURN</b></button>
+ </div>
+ <button id="start">START THE JOURNEY&nbsp; →</button>
+ <div class="note">Prototype build · Fictional environments until the film's exact route and stops can be verified. Ride safely: this is a game, not real-world riding guidance.</div>
+</div></div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+const $=id=>document.getElementById(id);
+let selectedDay=0, running=false, paused=false, distance=0, speed=0, views=0, steer=0, lateral=0, cameraShake=0;
+const dayData=[
+ {name:'THE DEPARTURE',mission:'Follow the road and reach the first overlook.',sky:0x9ab2bd,fog:0x9ab2bd,ground:0x64745d,road:0x343837,sun:0xffd6a0,tree:0x354b38},
+ {name:'THE WILDS',mission:'Ride through the highland pass and find the hidden viewpoint.',sky:0x91a9a2,fog:0x91a9a2,ground:0x566b51,road:0x343a39,sun:0xf5d6a0,tree:0x304638},
+ {name:'OPEN ROAD',mission:'Cross the open valley and discover the scenic marker.',sky:0xb9b5a4,fog:0xb9b5a4,ground:0x827d62,road:0x3b3b38,sun:0xffd6a0,tree:0x586044},
+ {name:'THE RETURN',mission:'Follow the last stretch and complete the four-day journey.',sky:0x788d9c,fog:0x788d9c,ground:0x4b5b57,road:0x303638,sun:0xf5b77e,tree:0x34443e}
+];
+let scene,camera,renderer,bike,roadGroup,scenery=[],clock=new THREE.Clock(), roadCurve, roadLength=0, checkpoints=[], lastCheckpoint=0;
+const keys={};
+function mat(color,rough=.8,metal=0){return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal});}
+function box(parent,w,h,d,material,x,y,z){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);m.position.set(x,y,z);parent.add(m);return m;}
+function cylinder(parent,r1,r2,h,material,x,y,z,rotZ=0){const m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,16),material);m.position.set(x,y,z);m.rotation.z=rotZ;parent.add(m);return m;}
+function makeBike(){
+ const g=new THREE.Group();const black=mat(0x101414,.48),rubber=mat(0x090b0b),metal=mat(0x777d7a,.28,.72),red=mat(0x9c3026,.4),glass= new THREE.MeshStandardMaterial({color:0x9db8c0,roughness:.15,metalness:.3,transparent:true,opacity:.55});
+ // wheels
+ for(const z of [-1.05,1.05]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.43,.43,.19,28),rubber);wheel.rotation.x=Math.PI/2;wheel.position.set(0,.48,z);g.add(wheel);const hub=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.205,16),metal);hub.rotation.x=Math.PI/2;hub.position.copy(wheel.position);g.add(hub);}
+ // frame and engine
+ box(g,.18,.16,1.25,metal,0,.83,0);box(g,.62,.48,.58,black,0,.82,.05);box(g,.56,.22,.6,red,0,1.12,-.12);
+ // tank, seat, tail
+ const tank=new THREE.Mesh(new THREE.SphereGeometry(1,24,16),red);tank.scale.set(.37,.28,.55);tank.position.set(0,1.28,-.27);g.add(tank);
+ box(g,.42,.16,.65,black,0,1.2,.48);box(g,.34,.17,.43,red,0,1.18,1.02);
+ // fork and handlebar
+ cylinder(g,.055,.07,.88,metal,-.22,.8,-.9,.12);cylinder(g,.055,.07,.88,metal,.22,.8,-.9,-.12);
+ box(g,.9,.055,.08,metal,0,1.47,-.85);
+ // exhaust and lights
+ cylinder(g,.07,.09,.92,metal,.36,.66,.28,Math.PI/2);
+ const lamp=new THREE.Mesh(new THREE.SphereGeometry(.13,16,12),mat(0xffe8b5,.2));lamp.position.set(0,1.12,-.98);g.add(lamp);
+ const windshield=new THREE.Mesh(new THREE.BoxGeometry(.38,.35,.04),glass);windshield.position.set(0,1.58,-.83);windshield.rotation.x=-.2;g.add(windshield);
+ // rider silhouette with helmet
+ const jacket=mat(0x202a2b,.9), helmet=mat(0x171d20,.22,.25);
+ const body=new THREE.Mesh(new THREE.CapsuleGeometry(.22,.53,5,10),jacket);body.position.set(0,1.72,.35);body.rotation.x=-.24;g.add(body);
+ const head=new THREE.Mesh(new THREE.SphereGeometry(.2,18,14),helmet);head.position.set(0,2.12,.12);g.add(head);
+ const visor=new THREE.Mesh(new THREE.BoxGeometry(.27,.09,.08),mat(0x657b80,.12,.4));visor.position.set(0,2.14,-.02);g.add(visor);
+ g.position.set(0,0,0);scene.add(g);return g;
+}
+function curveForDay(day){const points=[];for(let i=0;i<=24;i++){const z=-i*18;const x=Math.sin(i*.34+day*.8)*5+Math.sin(i*.12+day)*3;const y=Math.sin(i*.18+day)*.7;points.push(new THREE.Vector3(x,y,z));}return new THREE.CatmullRomCurve3(points);}
+function buildWorld(day){
+ const d=dayData[day];scene.background=new THREE.Color(d.sky);scene.fog=new THREE.Fog(d.fog,35,210);
+ while(scene.children.length>0)scene.remove(scene.children[0]);
+ const hemi=new THREE.HemisphereLight(0xdde8ed,0x384536,2.1);scene.add(hemi);
+ const sun=new THREE.DirectionalLight(d.sun,2.5);sun.position.set(-35,55,-45);scene.add(sun);
+ const ground=new THREE.Mesh(new THREE.PlaneGeometry(1200,1200),mat(d.ground));ground.rotation.x=-Math.PI/2;ground.position.y=-.12;scene.add(ground);
+ roadCurve=curveForDay(day);roadLength=roadCurve.getLength();
+ const pts=roadCurve.getPoints(320), verts=[],uv=[],idx=[];
+ for(let i=0;i<pts.length;i++){const p=pts[i],t=roadCurve.getTangentAt(i/(pts.length-1)),side=new THREE.Vector3(-t.z,0,t.x).normalize();verts.push(p.x-side.x*5,p.y,p.z-side.z*5,p.x+side.x*5,p.y,p.z+side.z*5);uv.push(0,i/12,1,i/12);if(i<pts.length-1){let a=i*2;idx.push(a,a+1,a+2,a+1,a+3,a+2);}}
+ const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geo.setIndex(idx);geo.computeVertexNormals();const road=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:d.road,roughness:.95,side:THREE.DoubleSide}));road.position.y=.015;scene.add(road);
+ // subtle road edge lines
+ const edgeMat=mat(0xb7b2a0);for(const side of [-1,1]){const arr=[];for(let i=0;i<pts.length;i++){const t=roadCurve.getTangentAt(i/(pts.length-1)),s=new THREE.Vector3(-t.z,0,t.x).normalize();arr.push(new THREE.Vector3(pts[i].x+s.x*4.65*side,pts[i].y+.035,pts[i].z+s.z*4.65*side));}const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(arr),new THREE.LineBasicMaterial({color:0xc2bba7,transparent:true,opacity:.48}));scene.add(line);}
+ // dashed centre line
+ for(let i=0;i<180;i+=2){const t=i/180,p=roadCurve.getPointAt(t);const dash=box(scene,.11,.025,1.4,mat(0xd5d0bf),p.x,p.y+.045,p.z);dash.rotation.y=Math.atan2(roadCurve.getTangentAt(t).x,roadCurve.getTangentAt(t).z);}
+ // scenery trees, boulders, shrubs
+ const treeMat=mat(d.tree), trunk=mat(0x51483a), rock=mat(day===2?0x827b68:0x68746c);
+ for(let i=0;i<100;i++){const t=(i/100)*.98+.01,p=roadCurve.getPointAt(t),tan=roadCurve.getTangentAt(t),side=new THREE.Vector3(-tan.z,0,tan.x).normalize();for(const s of [-1,1]){const spread=7+Math.random()*18,x=p.x+side.x*spread*s,z=p.z+side.z*spread*s;if(Math.random()<.7){const h=2.5+Math.random()*5;const tr=cylinder(scene,.13,.2,h*.48,trunk,x,h*.24,z);const crown=new THREE.Mesh(new THREE.ConeGeometry(1+Math.random()*.5,h*.48,7),treeMat);crown.position.set(x,h*.72,z);scene.add(crown);}else{const b=new THREE.Mesh(new THREE.DodecahedronGeometry(1+Math.random()*1.5,0),rock);b.position.set(x,.5,z);b.scale.y=.55;scene.add(b);}}}
+ // distant mountain silhouettes
+ for(let i=0;i<18;i++){const m=new THREE.Mesh(new THREE.ConeGeometry(14+Math.random()*18,20+Math.random()*25,5),mat(day===2?0x777866:0x66736e));m.position.set((Math.random()-.5)*250,8,-70-Math.random()*170);m.rotation.y=Math.random()*2;scene.add(m);}
+ // landmark arch and marker at about 80%
+ const cp=roadCurve.getPointAt(.8), tangent=roadCurve.getTangentAt(.8);const sign=box(scene,2.1,1.1,.16,mat(0x252c29),cp.x+7,2,cp.z);sign.rotation.y=Math.atan2(tangent.x,tangent.z);const postMat=mat(0x6c6e65);cylinder(scene,.09,.09,2.2,postMat,cp.x+7,1,cp.z);
+ // checkpoint ring
+ const ring=new THREE.Mesh(new THREE.TorusGeometry(1.2,.045,8,36),new THREE.MeshBasicMaterial({color:0xd9b978}));ring.position.set(cp.x,1.55,cp.z);ring.rotation.y=Math.atan2(tangent.x,tangent.z);scene.add(ring);
+ checkpoints=[{p:roadCurve.getPointAt(.36),done:false},{p:cp,done:false}];
+ bike=makeBike();bike.position.copy(roadCurve.getPointAt(.01));bike.position.y=.02;
+ camera.position.set(0,5,10);camera.lookAt(0,1,0);
+}
+function init(){
+ scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.1,1000);
+ renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;document.body.appendChild(renderer.domElement);
+ buildWorld(selectedDay);window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+}
+function toast(s){$('toast').textContent=s;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1900);}
+function start(){if(!scene)init();$('menu').style.display='none';$('pause').style.display='block';$('progress').style.display='block';$('missiontext').textContent=dayData[selectedDay].mission;running=true;paused=false;distance=0;speed=0;views=0;lastCheckpoint=0;checkpoints.forEach(c=>c.done=false);bike.position.copy(roadCurve.getPointAt(.01));}
+function togglePause(){if(!running)return;paused=!paused;$('menu').style.display=paused?'grid':'none';$('pause').textContent=paused?'▶ RESUME':'Ⅱ PAUSE';}
+function selectDay(n){selectedDay=n;document.querySelectorAll('.day').forEach(b=>b.classList.toggle('active',+b.dataset.day===n));$('daylabel').innerHTML=`CHAPTER 0${n+1}<strong>${dayData[n].name}</strong>`;}
+document.querySelectorAll('.day').forEach(b=>b.addEventListener('click',()=>selectDay(+b.dataset.day)));
+$('start').addEventListener('click',()=>{if(!scene)init();else buildWorld(selectedDay);start();});
+$('pause').addEventListener('click',togglePause);
+function keyDown(k){keys[k]=true;}function keyUp(k){keys[k]=false;}
+window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();if(e.key.toLowerCase()==='p')togglePause();keyDown(e.key===' ' ? ' ' : e.key);});
+window.addEventListener('keyup',e=>keyUp(e.key===' '?' ':e.key));window.addEventListener('blur',()=>Object.keys(keys).forEach(k=>keys[k]=false));
+document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;b.addEventListener('pointerdown',e=>{e.preventDefault();b.classList.add('down');keyDown(k);});['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,e=>{b.classList.remove('down');keyUp(k);}));});
+function animate(){
+ requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04);
+ if(running&&!paused){
+  const accel=keys.ArrowUp||keys.w||keys.W||keys[' '],brake=keys.ArrowDown||keys.s||keys.S;
+  speed=THREE.MathUtils.damp(speed,accel?78:brake?0:34,accel?1.1:2.2,dt);if(brake)speed=Math.max(0,speed-42*dt);
+  const steerInput=(keys.ArrowLeft||keys.a||keys.A?-1:0)+(keys.ArrowRight||keys.d||keys.D?1:0);
+  steer=THREE.MathUtils.damp(steer,steerInput,5,dt);
+  distance+=speed*dt/3600;let progress=Math.min(.985,.01+distance/3.8);const base=roadCurve.getPointAt(progress),tan=roadCurve.getTangentAt(progress),side=new THREE.Vector3(-tan.z,0,tan.x).normalize();
+  lateral=THREE.MathUtils.clamp(lateral+steer*dt*(speed/30)*3,-3.1,3.1);bike.position.set(base.x+side.x*lateral,base.y+.03,base.z+side.z*lateral);bike.rotation.y=Math.atan2(tan.x,tan.z);bike.rotation.z=-steer*.18;bike.rotation.x=Math.sin(distance*90)*.012;
+  const target=new THREE.Vector3(bike.position.x-tan.x*7, bike.position.y+3.1, bike.position.z-tan.z*7);camera.position.lerp(target,1-Math.pow(.001,dt));camera.lookAt(bike.position.x+tan.x*5,bike.position.y+1.2,bike.position.z+tan.z*5);
+  checkpoints.forEach((c,i)=>{if(!c.done&&bike.position.distanceTo(c.p)<4){c.done=true;views++;toast(i===0?'SCENIC MOMENT DISCOVERED':'VIEWPOINT REACHED');$('views').textContent=String(views).padStart(2,'0');}});
+  $('speed').textContent=String(Math.round(speed)).padStart(3,'0');$('distance').textContent=distance.toFixed(1);$('bar').style.width=(progress*100)+'%';
+  if(progress>=.98){running=false;toast('DAY COMPLETE · JOURNEY CONTINUES');setTimeout(()=>{$('menu').style.display='grid';$('pause').style.display='none';$('progress').style.display='none';$('start').textContent=selectedDay<3?'CONTINUE TO DAY '+(selectedDay+2)+' →':'RIDE AGAIN →';$('start').onclick=()=>{if(selectedDay<3)selectDay(selectedDay+1);buildWorld(selectedDay);$('start').onclick=null;$('start').textContent='START THE JOURNEY →';start();};},1500);}
+ }
+ renderer.render(scene,camera);
+}
+init();animate();
+</script>
+</body>
+</html>
