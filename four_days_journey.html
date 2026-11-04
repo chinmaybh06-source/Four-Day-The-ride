@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#101820">
+<title>FOUR DAYS — The Journey</title>
+<style>
+:root{--ink:#f5f2e9;--muted:#b9c2c8;--gold:#e6b968;--glass:rgba(12,19,25,.72)}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101820;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+#scene{position:fixed;inset:0;width:100%;height:100%;display:block}
+.vignette{position:fixed;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(4,9,14,.48),transparent 24%,transparent 62%,rgba(4,9,14,.72)),radial-gradient(ellipse at center,transparent 48%,rgba(0,0,0,.28) 100%)}
+header{position:fixed;top:0;left:0;right:0;padding:clamp(16px,3vw,30px);display:flex;justify-content:space-between;align-items:flex-start;gap:16px;pointer-events:none}
+.brand{font-size:11px;letter-spacing:.28em;font-weight:800;color:var(--gold)}.brand small{display:block;margin-top:7px;color:#d4d9dc;font-weight:500;letter-spacing:.16em;font-size:9px}
+.progress{display:flex;gap:5px;margin-top:10px}.progress i{width:24px;height:3px;background:#ffffff40;border-radius:9px}.progress i.active{background:var(--gold)}
+.topright{display:flex;gap:8px;pointer-events:auto}.glass{background:var(--glass);border:1px solid #ffffff24;backdrop-filter:blur(14px);color:var(--ink);border-radius:999px;padding:10px 13px;font-size:11px;letter-spacing:.08em}
+main{position:fixed;left:clamp(18px,5vw,64px);bottom:clamp(26px,6vh,62px);max-width:min(620px,88vw);pointer-events:none}
+.eyebrow{font-size:10px;letter-spacing:.24em;color:var(--gold);font-weight:800;text-transform:uppercase}
+h1{font-size:clamp(38px,7.5vw,82px);line-height:.92;letter-spacing:-.055em;margin:12px 0 14px;font-weight:800;text-shadow:0 4px 28px #0008}
+#description{max-width:480px;color:#e1e5e6;font-size:clamp(13px,1.5vw,16px);line-height:1.65;margin:0 0 20px;text-shadow:0 2px 12px #000}
+.actions{display:flex;gap:9px;flex-wrap:wrap;pointer-events:auto}.btn{border:1px solid #ffffff50;background:#1018209c;color:white;border-radius:3px;padding:12px 16px;font-size:10px;letter-spacing:.14em;font-weight:800;text-transform:uppercase;cursor:pointer;backdrop-filter:blur(12px)}.btn.primary{background:var(--gold);color:#17191b;border-color:var(--gold)}.btn:active{transform:scale(.98)}
+.hint{position:fixed;right:clamp(16px,3vw,30px);bottom:clamp(24px,5vh,48px);font-size:10px;letter-spacing:.12em;color:#ffffffb0;text-align:right;line-height:1.7;pointer-events:none}
+.panel{position:fixed;right:clamp(14px,3vw,30px);top:86px;width:min(290px,calc(100vw - 28px));padding:17px;background:var(--glass);border:1px solid #ffffff26;backdrop-filter:blur(16px);border-radius:8px;display:none}
+.panel.open{display:block}.panel h3{font-size:11px;letter-spacing:.18em;color:var(--gold);margin:0 0 12px}.chapter{display:flex;align-items:center;justify-content:space-between;width:100%;padding:11px 0;border:0;border-top:1px solid #ffffff20;background:none;color:#fff;text-align:left;cursor:pointer;font-size:12px}.chapter span{color:#aeb9c0;font-size:10px}
+#toast{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);padding:13px 18px;border:1px solid #ffffff45;background:#0d171ee8;border-radius:5px;font-size:11px;letter-spacing:.1em;opacity:0;transition:opacity .25s;pointer-events:none;text-align:center;max-width:85vw}
+#photoCount{color:var(--gold)}
+footer{position:fixed;left:clamp(18px,5vw,64px);top:clamp(90px,15vh,150px);font-size:9px;letter-spacing:.18em;color:#ffffff9c;pointer-events:none}
+@media(max-width:600px){header{padding:17px}.topright .glass{padding:9px 11px;font-size:9px}main{bottom:28px}h1{font-size:48px}#description{font-size:13px;max-width:90vw}.hint{display:none}.panel{top:70px}footer{top:94px}}
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas><div class="vignette"></div>
+<header><div><div class="brand">FOUR DAYS <small>AN OPEN-ROAD JOURNAL</small></div><div class="progress" id="progress"><i class="active"></i><i></i><i></i><i></i></div></div>
+<div class="topright"><button class="glass" id="chaptersBtn">CHAPTERS</button><button class="glass" id="soundBtn">SOUND: OFF</button></div></header>
+<footer>SCENIC EXPLORATION · NO DRIVING CONTROLS</footer>
+<main><div class="eyebrow" id="day">DAY 01 · THE BEGINNING</div><h1 id="title">THE<br>FIRST LIGHT.</h1><p id="description">Every great journey begins with a quiet moment before the world wakes up. Take in the view, look around, and collect the details that make this trip yours.</p><div class="actions"><button class="btn primary" id="exploreBtn">EXPLORE THIS STOP</button><button class="btn" id="nextBtn">NEXT CHAPTER →</button></div></main>
+<div class="hint">DRAG TO LOOK AROUND<br>TAP THE GOLD MARKERS TO DISCOVER<br><span id="photoCount">0</span> / 4 MOMENTS COLLECTED</div>
+<div class="panel" id="panel"><h3>THE FOUR CHAPTERS</h3><button class="chapter" data-i="0">01 — First Light <span>BEGINNING</span></button><button class="chapter" data-i="1">02 — Into the Hills <span>ASCENT</span></button><button class="chapter" data-i="2">03 — The Coastline <span>HORIZON</span></button><button class="chapter" data-i="3">04 — The Long Way Home <span>RETURN</span></button></div>
+<div id="toast"></div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+const canvas=document.querySelector('#scene');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x9db5c4);scene.fog=new THREE.Fog(0x9db5c4,42,180);
+const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.1,300);camera.position.set(0,4.1,13);
+const hemi=new THREE.HemisphereLight(0xcde4ff,0x4b4032,2.0);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xffe1b1,3.0);sun.position.set(-24,35,15);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+const world=new THREE.Group();scene.add(world);
+const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});
+const groundMat=mat(0x56634c),roadMat=mat(0x343a3d),lineMat=mat(0xd9d0b7),rockMat=mat(0x77766d),trunkMat=mat(0x44382d),leafMats=[mat(0x344d3a),mat(0x496448),mat(0x68764c)];
+let markerMeshes=[];let chapterIndex=0;let collected=new Set();let yaw=0,pitch=-.04,drag=false,lastX=0,lastY=0;let audioCtx=null,osc=null;
+function clearWorld(){while(world.children.length){const o=world.children.pop();if(o.geometry)o.geometry.dispose();}}
+function add(mesh){world.add(mesh);return mesh}
+function box(w,h,d,material,x,y,z){let m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;return add(m)}
+function tree(x,z,s=1){let g=new THREE.Group();g.position.set(x,0,z);g.scale.setScalar(s);let t=new THREE.Mesh(new THREE.CylinderGeometry(.13,.22,2.3,7),trunkMat);t.position.y=1.15;t.castShadow=true;g.add(t);for(let k=0;k<3;k++){let c=new THREE.Mesh(new THREE.ConeGeometry(1.05-k*.17,2.0,7),leafMats[(k+Math.floor(Math.abs(x)))%3]);c.position.y=2.25+k*.65;c.castShadow=true;g.add(c)}add(g)}
+function mountain(x,z,s,color){let m=new THREE.Mesh(new THREE.ConeGeometry(7*s,12*s,5),mat(color));m.position.set(x,5*s,z);m.rotation.y=.4;m.castShadow=true;add(m)}
+function marker(x,y,z,id,label){let group=new THREE.Group();group.position.set(x,y,z);let orb=new THREE.Mesh(new THREE.SphereGeometry(.22,16,12),new THREE.MeshStandardMaterial({color:0xf3c66e,emissive:0x8c5515,emissiveIntensity:1.4,roughness:.3}));group.add(orb);let ring=new THREE.Mesh(new THREE.TorusGeometry(.38,.025,8,24),new THREE.MeshBasicMaterial({color:0xffd58a}));group.add(ring);group.userData={id,label};add(group);markerMeshes.push(group)}
+const chapters=[
+{day:'DAY 01 · THE BEGINNING',title:'THE<br>FIRST LIGHT.',desc:'A quiet departure. Cool air, long shadows and the feeling that the map is about to become a memory.',sky:0x9db5c4,fog:0x9db5c4,ground:0x56634c,road:0x343a3d,mountains:[[-23,-48,1.5,0x667a83],[-8,-57,2,0x778d92],[17,-55,1.7,0x536c73],[32,-40,1.2,0x7d8d89]],trees:24,markers:[[-5,3,-8,'01','The first view'],[8,2,-18,'02','A bend in the road']]},
+{day:'DAY 02 · THE ASCENT',title:'INTO<br>THE HILLS.',desc:'The landscape rises and the horizon keeps changing. Pause among the ridgelines and notice the small things along the way.',sky:0x91a9b9,fog:0x91a9b9,ground:0x53634a,road:0x343a3d,mountains:[[-25,-40,2.1,0x526b6e],[-8,-56,2.5,0x70847f],[16,-52,2.2,0x526d70],[33,-38,1.8,0x83918a]],trees:34,markers:[[-9,3,-12,'01','The ridge'],[7,2,-24,'02','The valley']]},
+{day:'DAY 03 · THE HORIZON',title:'WHERE<br>LAND MEETS SEA.',desc:'A wider sky and a distant blue line. This chapter is about slowing down and letting the view do the talking.',sky:0x8fb6c9,fog:0x8fb6c9,ground:0x77775d,road:0x414548,mountains:[[-27,-50,1.2,0x758a8a],[-8,-60,1.4,0x809a9b],[19,-58,1.2,0x6b8588]],trees:12,markers:[[-7,2,-13,'01','The overlook'],[9,2,-26,'02','The blue horizon']]},
+{day:'DAY 04 · THE RETURN',title:'THE LONG<br>WAY HOME.',desc:'The final chapter. The road-trip journal closes, but the details you collected stay with you long after the view changes.',sky:0xd29c78,fog:0xd29c78,ground:0x555b46,road:0x35393a,mountains:[[-24,-45,1.6,0x6c6c65],[-7,-57,2,0x77776d],[17,-54,1.8,0x5b665e],[34,-40,1.3,0x8a7765]],trees:22,markers:[[-6,3,-11,'01','Last light'],[8,2,-22,'02','The final view']]}
+];
+function build(i){
+ chapterIndex=i;const c=chapters[i];clearWorld();markerMeshes=[];
+ scene.background.setHex(c.sky);scene.fog.color.setHex(c.fog);
+ groundMat.color.setHex(c.ground);roadMat.color.setHex(c.road);
+ const floor=new THREE.Mesh(new THREE.PlaneGeometry(240,240),groundMat);floor.rotation.x=-Math.PI/2;floor.position.set(0,-.12,-55);floor.receiveShadow=true;add(floor);
+ // A scenic road in the distance is part of the landscape; it cannot be controlled.
+ const road=new THREE.Mesh(new THREE.PlaneGeometry(9,150),roadMat);road.rotation.x=-Math.PI/2;road.position.set(0,-.04,-55);add(road);
+ for(let z=-125;z<5;z+=8){box(.12,.025,.85,lineMat,-.08,.005,z)}
+ for(let side of [-1,1]){for(let z=-125;z<2;z+=7){let rail=box(.12,.48,2.8,mat(0x8b8e89),side*5.2,.35,z);rail.rotation.z=side*.02}}
+ c.mountains.forEach(m=>mountain(...m));
+ for(let n=0;n<c.trees;n++){let side=Math.random()<.5?-1:1;let z=-Math.random()*110;let x=side*(7+Math.random()*20);tree(x,z,.65+Math.random()*1.0)}
+ // Foreground rocks and scrub add depth.
+ for(let n=0;n<42;n++){let x=(Math.random()-.5)*52,z=-Math.random()*95;if(Math.abs(x)<5)continue;let r=new THREE.Mesh(new THREE.DodecahedronGeometry(.35+Math.random()*.9,0),rockMat);r.position.set(x,.2,z);r.scale.y=.55;r.castShadow=true;add(r)}
+ c.markers.forEach(m=>marker(...m));
+ // Foreground roadside viewpoint frame, deliberately no rider controls or vehicle cockpit.
+ const shoulder=box(18,.12,8,mat(0x625e50),0,-.15,8);shoulder.position.y=-.15;
+ camera.position.set(0,4.1,13);yaw=0;pitch=-.04;camera.rotation.set(pitch,yaw,0);
+ document.querySelector('#day').textContent=c.day;document.querySelector('#title').innerHTML=c.title;document.querySelector('#description').textContent=c.desc;
+ document.querySelectorAll('.progress i').forEach((el,j)=>el.classList.toggle('active',j<=i));
+ document.querySelectorAll('.chapter').forEach((el,j)=>el.style.color=j===i?'#e6b968':'#fff');
+}
+build(0);
+function notify(s){const t=document.querySelector('#toast');t.textContent=s;t.style.opacity=1;clearTimeout(notify.timer);notify.timer=setTimeout(()=>t.style.opacity=0,1900)}
+function updateCount(){document.querySelector('#photoCount').textContent=collected.size}
+function collectNearest(){let available=markerMeshes.filter(m=>!collected.has(chapterIndex+'-'+m.userData.id));if(!available.length){notify('YOU FOUND EVERY MOMENT IN THIS CHAPTER');return}let nearest=available.sort((a,b)=>a.position.distanceTo(camera.position)-b.position.distanceTo(camera.position))[0];collected.add(chapterIndex+'-'+nearest.userData.id);nearest.visible=false;updateCount();notify('MOMENT COLLECTED · '+nearest.userData.label.toUpperCase())}
+document.querySelector('#exploreBtn').onclick=collectNearest;
+document.querySelector('#nextBtn').onclick=()=>build((chapterIndex+1)%4);
+document.querySelector('#chaptersBtn').onclick=()=>document.querySelector('#panel').classList.toggle('open');
+document.querySelectorAll('.chapter').forEach(b=>b.onclick=()=>{build(+b.dataset.i);document.querySelector('#panel').classList.remove('open')});
+canvas.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;lastY=e.clientY;canvas.setPointerCapture(e.pointerId)});
+canvas.addEventListener('pointermove',e=>{if(!drag)return;yaw-=(e.clientX-lastX)*.004;pitch=Math.max(-.45,Math.min(.28,pitch+(e.clientY-lastY)*.003));lastX=e.clientX;lastY=e.clientY;camera.rotation.set(pitch,yaw,0)});
+canvas.addEventListener('pointerup',()=>drag=false);canvas.addEventListener('pointercancel',()=>drag=false);
+canvas.addEventListener('click',e=>{if(drag)return;const rect=canvas.getBoundingClientRect();const mouse=new THREE.Vector2((e.clientX/rect.width)*2-1,-(e.clientY/rect.height)*2+1);const ray=new THREE.Raycaster();ray.setFromCamera(mouse,camera);const hits=ray.intersectObjects(markerMeshes,true);if(hits.length){let g=hits[0].object;while(g.parent&& !g.userData.id)g=g.parent;if(g.userData.id){const key=chapterIndex+'-'+g.userData.id;if(!collected.has(key)){collected.add(key);g.visible=false;updateCount();notify('MOMENT COLLECTED · '+g.userData.label.toUpperCase())}}}});
+document.querySelector('#soundBtn').onclick=async()=>{const b=document.querySelector('#soundBtn');if(!audioCtx){audioCtx=new (window.AudioContext||window.webkitAudioContext)();const master=audioCtx.createGain();master.gain.value=.025;master.connect(audioCtx.destination);const buffer=audioCtx.createBuffer(1,audioCtx.sampleRate*2,audioCtx.sampleRate);const data=buffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*.22;const src=audioCtx.createBufferSource();src.buffer=buffer;src.loop=true;const filter=audioCtx.createBiquadFilter();filter.type='lowpass';filter.frequency.value=380;src.connect(filter);filter.connect(master);src.start();b.textContent='SOUND: ON'}else if(audioCtx.state==='running'){await audioCtx.suspend();b.textContent='SOUND: OFF'}else{await audioCtx.resume();b.textContent='SOUND: ON'}};
+function animate(){requestAnimationFrame(animate);renderer.render(scene,camera)}animate();
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.8))});
+</script>
+</body></html>
